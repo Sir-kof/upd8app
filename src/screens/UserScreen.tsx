@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {
+  Alert,
   ImageBackground,
   SafeAreaView,
   StyleSheet,
   ScrollView,
   Text,
   View,
-  Alert,
 } from 'react-native';
-import env from '../config/env';
+
 import {Dropdown} from 'react-native-element-dropdown';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
@@ -27,91 +27,29 @@ import InputField from '../components/InputField';
 import CustomButton from '../components/CustomButton';
 
 import companyImg from '../assets/images/upd8.jpg';
+import env from '../config/env';
 
-const initialState = {
-  cpf: '',
-  name: '',
-  address: '',
-  birthday: 'Data de nascimento',
-  isDatePickerVisible: false,
-  gender: '',
-  state: '',
-  stateName: '',
-  city: '',
-  isFocus: false,
-  checked: 'unchecked',
-};
-
-const RegisterUserScreen = ({navigation}: any) => {
-  const [cpf, setCpf] = useState(initialState.cpf);
-  const [name, setName] = useState(initialState.name);
-  const [address, setAddress] = useState(initialState.address);
-  const [birthday, setBirthday] = useState(initialState.birthday);
-  const [checked, setChecked] = useState(initialState.checked);
-  const [gender, setGender] = useState(initialState.gender);
-  const [state, setState] = useState(initialState.state);
+const UserScreen = ({navigation, route}: any) => {
+  const [cpf, setCpf] = useState(route.params.cpf);
+  const [name, setName] = useState(route.params.name);
+  const [address, setAddress] = useState(route.params.address);
+  const [birthday, setBirthday] = useState(route.params.birthday);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [gender, setGender] = useState(route.params.gender);
+  const [state, setState] = useState(route.params.state);
   const [states, setStates] = useState([]);
-  const [stateName, setStateName] = useState(initialState.stateName);
-  const [city, setCity] = useState(initialState.city);
+  const [city, setCity] = useState(route.params.city);
   const [listCity, setListCity] = useState([]);
-  const [isFocus, setIsFocus] = useState(initialState.isFocus);
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(
-    initialState.isDatePickerVisible,
-  );
+  const [isFocus, setIsFocus] = useState(false);
+  const [erase, setErase] = useState(false);
 
-  const limpar = () => {
-    setCpf(initialState.cpf);
-    setName(initialState.name);
-    setAddress(initialState.address);
-    setBirthday(initialState.birthday);
-    setChecked(initialState.checked);
-    setGender(initialState.gender);
-    setState(initialState.gender);
-    setStateName(initialState.stateName);
-    setCity(initialState.city);
-    setIsFocus(false);
-  };
-
-  const validateCpf = cpf.length === 11;
-  const validateName = name && name.length >= 3;
-  const validateAddress = address && address.length >= 5;
-  const validateBirthday = birthday && birthday !== initialState.birthday;
-  const validateGender = gender.length === 1;
-  const validateState = state.length > 0;
-  const validateCity = city.length > 0;
-
-  const validations = [];
-  validations.push(validateCpf);
-  validations.push(validateName);
-  validations.push(validateAddress);
-  validations.push(validateBirthday);
-  validations.push(validateGender);
-  validations.push(validateState);
-  validations.push(validateCity);
-
-  const validForm = validations.reduce((t, a) => t && a);
-
-  const characterValidator = () => {
-    return (
-      <Text
-        style={{
-          color: 'red',
-        }}>
-        *
-      </Text>
-    );
-  };
-
-  const birthdayValidator = () => {
-    return (
-      <Text
-        style={{
-          color: 'red',
-        }}>
-        Revise este campo
-      </Text>
-    );
-  };
+  const validateCpf = cpf.length === 11 && cpf !== route.params.cpf;
+  const validateName = name && name.length >= 3 && name !== route.params.name;
+  const validateAddress =
+    address && address.length >= 5 && address !== route.params.address;
+  const validateBirthday = birthday && birthday !== route.params.birthday;
+  const validateState = state.length > 0 && state !== route.params.state;
+  const validateCity = city.length > 0 && city !== route.params.city;
 
   const showDatePicker = () => {
     setDatePickerVisibility(true);
@@ -143,7 +81,6 @@ const RegisterUserScreen = ({navigation}: any) => {
         ]);
       });
   }
-
   function loadCity(id: string) {
     let url = 'https://servicodados.ibge.gov.br/api/v1/';
     url = url + `localidades/estados/${id}/municipios`;
@@ -162,7 +99,6 @@ const RegisterUserScreen = ({navigation}: any) => {
         ]);
       });
   }
-
   useEffect(() => {
     loadState();
   }, []);
@@ -170,7 +106,8 @@ const RegisterUserScreen = ({navigation}: any) => {
     if (state) {
       loadCity(state);
     }
-  }, [state]);
+    route.params.gender === 'M' ? setGender('M') : setGender('F');
+  }, [state, route.params.gender]);
 
   return (
     <SafeAreaView>
@@ -198,12 +135,14 @@ const RegisterUserScreen = ({navigation}: any) => {
                   />
                 </TouchableOpacity>
               </View>
-              <Text style={styles.mainText}>Cadastrar Usuários</Text>
+              <Text style={styles.mainText}>Informações do Usuário</Text>
             </View>
           </View>
           <View style={{height: '40%'}}>
             <InputField
-              label={'Digite o CPF'}
+              label={cpf.toString()}
+              editable={false}
+              selectTextOnFocus={false}
               valid={
                 validateCpf
                   ? {borderBottomColor: 'green'}
@@ -218,9 +157,9 @@ const RegisterUserScreen = ({navigation}: any) => {
                 />
               }
               value={cpf}
-              onChangeText={(text: React.SetStateAction<string>) => {
-                setCpf(text);
-              }}
+              onChangeText={(text: React.SetStateAction<string>) =>
+                setCpf(text)
+              }
             />
 
             <InputField
@@ -239,9 +178,9 @@ const RegisterUserScreen = ({navigation}: any) => {
                 />
               }
               value={name}
-              onChangeText={(text: React.SetStateAction<string>) => {
-                setName(text);
-              }}
+              onChangeText={(text: React.SetStateAction<string>) =>
+                setName(text)
+              }
             />
 
             <InputField
@@ -260,9 +199,9 @@ const RegisterUserScreen = ({navigation}: any) => {
                 />
               }
               value={address}
-              onChangeText={(text: React.SetStateAction<string>) => {
-                setAddress(text);
-              }}
+              onChangeText={(text: React.SetStateAction<string>) =>
+                setAddress(text)
+              }
             />
 
             <TouchableOpacity onPress={showDatePicker}>
@@ -274,9 +213,7 @@ const RegisterUserScreen = ({navigation}: any) => {
                   style={{paddingTop: 3}}
                 />
                 <Text style={styles.textInput}>
-                  {birthday === initialState.birthday
-                    ? initialState.birthday
-                    : moment(birthday).format('DD/MM/YYYY')}
+                  {moment(birthday).format('DD/MM/YYYY')}
                 </Text>
                 <DateTimePickerModal
                   isVisible={isDatePickerVisible}
@@ -284,11 +221,6 @@ const RegisterUserScreen = ({navigation}: any) => {
                   onConfirm={handleConfirm}
                   onCancel={hideDatePicker}
                 />
-                <Text>
-                  {birthday === initialState.birthday
-                    ? birthdayValidator()
-                    : ''}
-                </Text>
               </View>
             </TouchableOpacity>
 
@@ -299,27 +231,14 @@ const RegisterUserScreen = ({navigation}: any) => {
                 color="#ddd"
                 style={{paddingTop: 3}}
               />
-              <Text style={styles.textInput}>
-                Sexo
-                {gender === initialState.gender ? characterValidator() : ''}
-              </Text>
+              <Text style={styles.textInput}>Sexo</Text>
 
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Text style={{color: '#ddd'}}>Masculino</Text>
                 <Checkbox
-                  status={
-                    checked === 'checked' && gender === 'M'
-                      ? 'checked'
-                      : 'unchecked'
-                  }
+                  status={gender === 'M' ? 'checked' : 'unchecked'}
                   onPress={() => {
-                    setChecked('checked');
                     setGender('M');
-
-                    if (checked === 'checked' && gender === 'M') {
-                      setChecked('checked');
-                      setGender(initialState.gender);
-                    }
                   }}
                 />
               </View>
@@ -327,26 +246,15 @@ const RegisterUserScreen = ({navigation}: any) => {
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Text style={{color: '#ddd'}}>Feminino</Text>
                 <Checkbox
-                  status={
-                    checked === 'checked' && gender === 'F'
-                      ? 'checked'
-                      : 'unchecked'
-                  }
+                  status={gender === 'F' ? 'checked' : 'unchecked'}
                   onPress={() => {
-                    setChecked('checked');
                     setGender('F');
-
-                    if (checked === 'checked' && gender === 'F') {
-                      setChecked('checked');
-                      setGender(initialState.gender);
-                    }
                   }}
                 />
               </View>
             </View>
 
             <View style={styles.dropView}>
-              {state === initialState.state ? characterValidator() : ''}
               <Dropdown
                 style={[styles.dropdown, isFocus && {borderColor: '#ddd'}]}
                 placeholderStyle={styles.placeholderStyle}
@@ -358,19 +266,17 @@ const RegisterUserScreen = ({navigation}: any) => {
                 maxHeight={300}
                 labelField="label"
                 valueField="value"
-                placeholder={!isFocus ? 'Estado' : '...'}
+                placeholder={!isFocus ? state : '...'}
                 searchPlaceholder="Procurar..."
                 value={state}
                 onFocus={() => setIsFocus(true)}
                 onBlur={() => setIsFocus(false)}
                 onChange={item => {
-                  setStateName(item.label);
                   setState(item.value);
                   setIsFocus(false);
                 }}
               />
 
-              {city === initialState.city ? characterValidator() : ''}
               <Dropdown
                 style={[styles.dropdown, isFocus && {borderColor: '#ddd'}]}
                 placeholderStyle={styles.placeholderStyle}
@@ -382,7 +288,7 @@ const RegisterUserScreen = ({navigation}: any) => {
                 maxHeight={300}
                 labelField="label"
                 valueField="value"
-                placeholder={!isFocus ? 'Cidade' : '...'}
+                placeholder={!isFocus ? city : '...'}
                 searchPlaceholder="Procurar..."
                 value={city}
                 onFocus={() => setIsFocus(true)}
@@ -395,26 +301,41 @@ const RegisterUserScreen = ({navigation}: any) => {
             </View>
 
             <CustomButton
-              label={'Registrar'}
-              style={validForm ? {} : {backgroundColor: '#AAA'}}
-              disabled={!validForm}
+              label={'Salvar/Alterar'}
+              style={
+                (validateName ||
+                  validateAddress ||
+                  validateBirthday ||
+                  validateState ||
+                  validateCity) === true
+                  ? {}
+                  : {backgroundColor: '#AAA'}
+              }
+              disabled={
+                (validateName ||
+                  validateAddress ||
+                  validateBirthday ||
+                  validateState ||
+                  validateCity) === true
+              }
               onPress={() => {
-                if (!validForm) {
-                  Alert.alert('Revise todos os campos antes de prosseguir');
-                  return new Error();
-                } else {
+                if (
+                  validateName ||
+                  validateAddress ||
+                  validateBirthday ||
+                  validateState ||
+                  validateCity
+                ) {
                   let _data = {
-                    cpf: cpf,
                     name: name,
                     address: address,
                     birthday: birthday,
-                    gender: gender,
-                    state: stateName,
+                    state: state,
                     city: city,
                   };
-                  const url = `${env.baseUrl}:${env.port}/api/user`;
+                  const url = `${env.baseUrl}:${env.port}/api/user/${route.params.cpf}`;
                   fetch(url, {
-                    method: 'POST',
+                    method: 'PUT',
                     body: JSON.stringify(_data),
                     headers: {
                       'Content-type': 'application/json; charset=UTF-8',
@@ -423,12 +344,34 @@ const RegisterUserScreen = ({navigation}: any) => {
                     .then(response => response.json())
                     .then(json => console.log(json))
                     .catch(err => console.log(err));
-                  Alert.alert('Cadastro Realizado com sucesso');
+                  Alert.alert('Cadastro atualizado com sucesso!');
+                  navigation.navigate('Home');
+                } else {
+                  Alert.alert('Nenhum campo foi alterado');
+                  return new Error();
+                }
+              }}
+            />
+            <CustomButton
+              label={'Apagar Usuário'}
+              style={erase === true ? {} : {backgroundColor: '#AAA'}}
+              disabled={erase === false}
+              onPress={() => {
+                if (erase === false) {
+                  Alert.alert(
+                    `Apagar o Cadastro do usuário ${name} ? Clique novamente`,
+                  );
+                  setErase(true);
+                } else {
+                  const url = `${env.baseUrl}:${env.port}/api/user/${route.params.cpf}`;
+                  fetch(url, {
+                    method: 'DELETE',
+                  });
+                  Alert.alert('Cadastro apagado com sucesso!');
                   navigation.navigate('Home');
                 }
               }}
             />
-            <CustomButton label={'Limpar'} onPress={limpar} />
           </View>
         </View>
       </ScrollView>
@@ -516,4 +459,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterUserScreen;
+export default UserScreen;

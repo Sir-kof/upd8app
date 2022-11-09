@@ -12,6 +12,7 @@ import RegisterUserScreen from '../screens/RegisterUserScreen';
 import HomeScreen from '../screens/HomeScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ResponseScreen from '../screens/ResponseScreen';
+import UserScreen from '../screens/UserScreen';
 
 const AuthStack = () => {
   return (
@@ -57,8 +58,7 @@ const AuthStack = () => {
 
       <Drawer.Screen
         component={ResponseScreen}
-        name="Resultado"
-        styles={{display: 'none'}}
+        name="Response"
         options={{
           drawerItemStyle: {height: 0},
           drawerIcon: ({color}: any) => (
@@ -67,17 +67,16 @@ const AuthStack = () => {
         }}
       />
 
-      {/* <Drawer.Screen
-        component={ResponseScreen}
+      <Drawer.Screen
+        component={UserScreen}
         name="User"
-        styles={{display: 'none'}}
         options={{
           drawerItemStyle: {height: 0},
           drawerIcon: ({color}: any) => (
             <FontAwesome5 name="address-card" size={22} color={color} />
           ),
         }}
-      /> */}
+      />
     </Drawer.Navigator>
   );
 };

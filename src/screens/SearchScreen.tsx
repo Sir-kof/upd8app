@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
+  Alert,
   ImageBackground,
   SafeAreaView,
   StyleSheet,
@@ -25,29 +26,86 @@ import InputField from '../components/InputField';
 import CustomButton from '../components/CustomButton';
 
 import companyImg from '../assets/images/upd8.jpg';
+import env from '../config/env';
+
+const initialState = {
+  cpf: '',
+  name: '',
+  birthday: 'Data de nascimento',
+  isDatePickerVisible: false,
+  gender: '',
+  state: '',
+  stateName: '',
+  city: '',
+  isFocus: false,
+  checked: 'unchecked',
+};
 
 const SearchScreen = ({navigation}: any) => {
-  const [cpf, setCpf] = useState('');
-  const [name, setName] = useState('');
-  const [selectedDate, setSelectedDate] = useState('Data de nascimento');
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [checked, setChecked] = useState(false);
-  const [gender, setGender] = useState('');
-  const [uf, setUf] = React.useState('AC');
-  const [listUf, setListUf] = React.useState([]);
-  const [city, setCity] = React.useState('');
-  const [listCity, setListCity] = React.useState([]);
-  const [isFocus, setIsFocus] = useState(false);
+  const [cpf, setCpf] = useState(initialState.cpf);
+  const [name, setName] = useState(initialState.name);
+  const [birthday, setBirthday] = useState(initialState.birthday);
+  const [checked, setChecked] = useState(initialState.checked);
+  const [gender, setGender] = useState(initialState.gender);
+  const [state, setState] = useState(initialState.state);
+  const [states, setStates] = useState([]);
+  const [city, setCity] = useState(initialState.city);
+  const [stateName, setStateName] = useState(initialState.stateName);
+  const [listCity, setListCity] = useState([]);
+  const [isFocus, setIsFocus] = useState(initialState.isFocus);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(
+    initialState.isDatePickerVisible,
+  );
 
   const limpar = () => {
-    setCpf('');
-    setName('');
-    setSelectedDate('Data de nascimento');
-    setChecked(false);
-    setGender('');
-    setUf('AC');
-    setCity('');
-    setIsFocus(false);
+    setCpf(initialState.cpf);
+    setName(initialState.name);
+    setBirthday(initialState.birthday);
+    setChecked(initialState.checked);
+    setGender(initialState.gender);
+    setState(initialState.gender);
+    setStateName(initialState.stateName);
+    setCity(initialState.city);
+    setIsFocus(initialState.isFocus);
+  };
+
+  const validateCpf = cpf.length === 11;
+  const validateName = name && name.length >= 3;
+  const validateBirthday = birthday && birthday !== initialState.birthday;
+  const validateGender = gender.length === 1;
+  const validateState = state.length > 0;
+  const validateCity = city.length > 0;
+
+  const validations = [];
+  validations.push(validateCpf);
+  validations.push(validateName);
+  validations.push(validateBirthday);
+  validations.push(validateGender);
+  validations.push(validateState);
+  validations.push(validateCity);
+
+  const validForm = validations.reduce((t, a) => t && a);
+
+  const characterValidator = () => {
+    return (
+      <Text
+        style={{
+          color: 'red',
+        }}>
+        *
+      </Text>
+    );
+  };
+
+  const birthdayValidator = () => {
+    return (
+      <Text
+        style={{
+          color: 'red',
+        }}>
+        Revise este campo
+      </Text>
+    );
   };
 
   const showDatePicker = () => {
@@ -59,18 +117,18 @@ const SearchScreen = ({navigation}: any) => {
   };
 
   const handleConfirm = date => {
-    setSelectedDate(date);
+    setBirthday(date);
     hideDatePicker();
   };
 
-  function loadUf() {
+  function loadstate() {
     let url = 'https://servicodados.ibge.gov.br/';
     url = url + 'api/v1/localidades/estados';
     fetch(url)
       .then(response => response.json())
       .then(data => {
         data.sort((a, b) => a.nome.localeCompare(b.nome));
-        setListUf([
+        setStates([
           ...data.map((item: {nome: any; sigla: any}) => ({
             label: item.nome,
             value: item.sigla,
@@ -86,19 +144,22 @@ const SearchScreen = ({navigation}: any) => {
       .then(data => {
         data.sort((a, b) => a.nome.localeCompare(b.nome));
         setListCity([
-          ...data.map((item: { nome: any; sigla: any; }) => ({label: item.nome, value: item.sigla})),
+          ...data.map((item: {nome: any; sigla: any}) => ({
+            label: item.nome,
+            value: item.nome,
+          })),
           ,
         ]);
       });
   }
   useEffect(() => {
-    loadUf();
+    loadstate();
   }, []);
   useEffect(() => {
-    if (uf) {
-      loadCity(uf);
+    if (state) {
+      loadCity(state);
     }
-  }, [uf]);
+  }, [state]);
 
   return (
     <SafeAreaView>
@@ -132,6 +193,11 @@ const SearchScreen = ({navigation}: any) => {
           <View style={{height: '40%'}}>
             <InputField
               label={'Digite o CPF'}
+              valid={
+                validateCpf
+                  ? {borderBottomColor: 'green'}
+                  : {borderBottomColor: '#ccc'}
+              }
               icon={
                 <FontAwesome5
                   name="address-card"
@@ -141,11 +207,18 @@ const SearchScreen = ({navigation}: any) => {
                 />
               }
               value={cpf}
-              onChangeText={text => setCpf(text)}
+              onChangeText={(text: React.SetStateAction<string>) => {
+                setCpf(text);
+              }}
             />
 
             <InputField
               label={'Digite o nome'}
+              valid={
+                validateName
+                  ? {borderBottomColor: 'green'}
+                  : {borderBottomColor: '#ccc'}
+              }
               icon={
                 <Ionicons
                   name="person-outline"
@@ -155,7 +228,9 @@ const SearchScreen = ({navigation}: any) => {
                 />
               }
               value={name}
-              onChangeText={text => setName(text)}
+              onChangeText={(text: React.SetStateAction<string>) => {
+                setName(text);
+              }}
             />
 
             <TouchableOpacity onPress={showDatePicker}>
@@ -167,9 +242,9 @@ const SearchScreen = ({navigation}: any) => {
                   style={{paddingTop: 3}}
                 />
                 <Text style={styles.textInput}>
-                  {selectedDate === 'Data de nascimento'
+                  {birthday === 'Data de nascimento'
                     ? 'Data de nascimento'
-                    : moment(selectedDate).format('DD/MM/YYYY')}
+                    : moment(birthday).format('DD/MM/YYYY')}
                 </Text>
                 <DateTimePickerModal
                   isVisible={isDatePickerVisible}
@@ -177,6 +252,11 @@ const SearchScreen = ({navigation}: any) => {
                   onConfirm={handleConfirm}
                   onCancel={hideDatePicker}
                 />
+                <Text>
+                  {birthday === initialState.birthday
+                    ? birthdayValidator()
+                    : ''}
+                </Text>
               </View>
             </TouchableOpacity>
 
@@ -187,15 +267,27 @@ const SearchScreen = ({navigation}: any) => {
                 color="#ddd"
                 style={{paddingTop: 3}}
               />
-              <Text style={styles.textInput}>Sexo</Text>
+              <Text style={styles.textInput}>
+                Sexo{' '}
+                {gender === initialState.gender ? characterValidator() : ''}
+              </Text>
 
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Text style={{color: '#ddd'}}>Masculino</Text>
                 <Checkbox
-                  status={checked && gender === 'M' ? 'checked' : 'unchecked'}
+                  status={
+                    checked === 'checked' && gender === 'M'
+                      ? 'checked'
+                      : 'unchecked'
+                  }
                   onPress={() => {
-                    setChecked(!checked);
+                    setChecked('checked');
                     setGender('M');
+
+                    if (checked === 'checked' && gender === 'M') {
+                      setChecked('checked');
+                      setGender('');
+                    }
                   }}
                 />
               </View>
@@ -203,38 +295,50 @@ const SearchScreen = ({navigation}: any) => {
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Text style={{color: '#ddd'}}>Feminino</Text>
                 <Checkbox
-                  status={checked && gender === 'F' ? 'checked' : 'unchecked'}
+                  status={
+                    checked === 'checked' && gender === 'F'
+                      ? 'checked'
+                      : 'unchecked'
+                  }
                   onPress={() => {
-                    setChecked(!checked);
+                    setChecked('checked');
                     setGender('F');
+
+                    if (checked === 'checked' && gender === 'F') {
+                      setChecked('checked');
+                      setGender('');
+                    }
                   }}
                 />
               </View>
             </View>
 
             <View style={styles.dropView}>
+              {state === initialState.state ? characterValidator() : ''}
               <Dropdown
                 style={[styles.dropdown, isFocus && {borderColor: '#ddd'}]}
                 placeholderStyle={styles.placeholderStyle}
                 selectedTextStyle={styles.selectedTextStyle}
                 inputSearchStyle={styles.inputSearchStyle}
                 iconStyle={styles.iconStyle}
-                data={listUf}
+                data={states}
                 search
                 maxHeight={300}
                 labelField="label"
                 valueField="value"
                 placeholder={!isFocus ? 'Estado' : '...'}
                 searchPlaceholder="Procurar..."
-                value={uf}
+                value={state}
                 onFocus={() => setIsFocus(true)}
                 onBlur={() => setIsFocus(false)}
                 onChange={item => {
-                  setUf(item.value);
+                  setStateName(item.label);
+                  setState(item.value);
                   setIsFocus(false);
                 }}
               />
 
+              {city === initialState.city ? characterValidator() : ''}
               <Dropdown
                 style={[styles.dropdown, isFocus && {borderColor: '#ddd'}]}
                 placeholderStyle={styles.placeholderStyle}
@@ -260,7 +364,29 @@ const SearchScreen = ({navigation}: any) => {
 
             <CustomButton
               label={'Consultar'}
-              onPress={() => navigation.navigate('Resultado')}
+              style={validForm ? {} : {backgroundColor: '#AAA'}}
+              disabled={!validForm}
+              onPress={() => {
+                if (!validForm) {
+                  Alert.alert('Revise todos os campos antes de prosseguir');
+                  return new Error();
+                } else {
+                  const url = `${env.baseUrl}:${env.port}/api/user/${cpf}`;
+                  fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                      if (data.cpf) {
+                        navigation.navigate('Response', {data: data});
+                      }
+                    })
+                    .catch(err => {
+                      Alert.alert(
+                        'Ocorreu um erro na busca, revise o campo CPF e tente novamente',
+                      );
+                      return new Error(err);
+                    });
+                }
+              }}
             />
             <CustomButton label={'Limpar'} onPress={limpar} />
           </View>

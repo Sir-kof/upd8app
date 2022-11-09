@@ -1,18 +1,31 @@
 import React from 'react';
 import {View, StyleSheet, TextInput} from 'react-native';
 
-const InputField = ({label, icon, keyboardType, value, onChangeText}: any) => {
+const InputField = ({
+  label,
+  icon,
+  keyboardType,
+  editable,
+  selectTextOnFocus,
+  valid,
+  value,
+  onChangeText,
+}: any) => {
   return (
-    <View style={styles.viewInput}>
-      {icon}
-      <TextInput
-        placeholder={label}
-        placeholderTextColor="#ddd"
-        keyboardType={keyboardType}
-        style={styles.textInput}
-        value={value}
-        onChangeText={onChangeText}
-      />
+    <View>
+      <View style={[styles.viewInput, valid]}>
+        {icon}
+        <TextInput
+          placeholder={label}
+          editable={editable}
+          selectTextOnFocus={selectTextOnFocus}
+          placeholderTextColor="#ddd"
+          keyboardType={keyboardType}
+          style={styles.textInput}
+          value={value}
+          onChangeText={onChangeText}
+        />
+      </View>
     </View>
   );
 };
@@ -20,7 +33,6 @@ const InputField = ({label, icon, keyboardType, value, onChangeText}: any) => {
 const styles = StyleSheet.create({
   viewInput: {
     flexDirection: 'row',
-    borderBottomColor: '#ccc',
     borderBottomWidth: 1,
     borderBottomEndRadius: 1,
     marginBottom: 10,

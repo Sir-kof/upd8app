@@ -8,10 +8,22 @@ import {
   Image,
 } from 'react-native';
 import CustomButton from '../components/CustomButton';
+import env from '../config/env';
 
 import companyImg from '../assets/images/upd8.jpg';
 
 export default function HomeScreen({navigation}: any) {
+  // let url = `${env.baseUrl}:${env.port}/api/user/12345678900`;
+  // fetch(url)
+  //   .then(response => response.json())
+  //   .then(data => {
+  //     console.log(data);
+  //   })
+  //   .catch(function (error) {
+  //     console.log('A um problema aqui: ' + error.message);
+  //     throw error;
+  //   });
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
